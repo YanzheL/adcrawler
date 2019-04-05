@@ -84,5 +84,5 @@ volumes:
   images:
     driver_opts:
       type: "nfs"
-      o: "addr=10.245.146.40,nolock,soft,rw"
+      o: "addr=10.245.146.40,nolock,soft,rw,nfsvers=4,async"
       device: ":/docker/images"
