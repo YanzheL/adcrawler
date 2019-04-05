@@ -19,6 +19,7 @@ class AdUrlSpider(AdSpiderBase):
         }
     }
     MAX_URL_TASKS = 10000
+    RECURSIVE_CHECK_DEPTH = 4
 
     def make_request_from_task(self, serialized_task, **kwargs):
         serialized_task = str(serialized_task, 'utf8')
@@ -54,7 +55,7 @@ class AdUrlSpider(AdSpiderBase):
         self.logger.info("Parse")
         soup = BeautifulSoup(response.body, 'lxml')
         all_img_tags = filter(self.tagfilter, soup.find_all('img'))
-        candidate_img_tags = filter(lambda o: self.has_ad(o) or self.sibling_has_ad(o), all_img_tags)
+        candidate_img_tags = filter(self.maybe_ad_img, all_img_tags)
         for candidate in candidate_img_tags:
             ad_url = self.get_img_ad_url(candidate)
             ad_src = candidate.attrs.get('src', None)
@@ -81,6 +82,16 @@ class AdUrlSpider(AdSpiderBase):
             yield next_task
 
     @staticmethod
+    def maybe_ad_img(img_tag, cur_depth=0):
+        if cur_depth >= AdUrlSpider.RECURSIVE_CHECK_DEPTH:
+            return False
+        if AdUrlSpider.has_ad(img_tag):
+            return True
+        if AdUrlSpider.sibling_has_ad(img_tag):
+            return True
+        return AdUrlSpider.maybe_ad_img(img_tag.parent, cur_depth + 1)
+
+    @staticmethod
     def get_best_a_tag(a_tags):
         tag = None
         href = None
@@ -93,7 +104,9 @@ class AdUrlSpider(AdSpiderBase):
         return tag, href
 
     @staticmethod
-    def get_img_ad_url(img_tag):
+    def get_img_ad_url(img_tag, cur_depth=0):
+        if cur_depth >= AdUrlSpider.RECURSIVE_CHECK_DEPTH:
+            return
         if not isinstance(img_tag, Tag):
             return
         if 'data-url' in img_tag.attrs:
@@ -104,6 +117,8 @@ class AdUrlSpider(AdSpiderBase):
             return parent.attrs['href']
         sibling_a_tags = parent.find_all("a", recursive=False)
         best_a, best_href = AdUrlSpider.get_best_a_tag(sibling_a_tags)
+        if not best_href:
+            return AdUrlSpider.get_img_ad_url(img_tag.parent, cur_depth + 1)
         return best_href
 
     @staticmethod
