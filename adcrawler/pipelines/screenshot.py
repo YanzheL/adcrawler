@@ -17,7 +17,7 @@ class ScreenshotPipeline(object):
     def from_crawler(cls, crawler):
         return cls(
             crawler.settings['SCREENSHOT_DIR'],
-            crawler.settings['RETRY_TIMES']
+            crawler.settings['SCREENSHOT_RETRY_TIMES']
         )
 
     def process_item(self, item, spider):

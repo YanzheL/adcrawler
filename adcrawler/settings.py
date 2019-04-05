@@ -108,6 +108,7 @@ CONCURRENT_REQUESTS = int(os.getenv('CONCURRENT_REQUESTS', 32))
 
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
 RETRY_TIMES = int(os.getenv('RETRY_TIMES', 2))
+SCREENSHOT_RETRY_TIMES = int(os.getenv('SCREENSHOT_RETRY_TIMES', 5))
 
 # Config  about redis
 REDIS_HOST = os.getenv('REDIS_HOST', '10.245.146.40')
