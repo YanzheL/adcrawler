@@ -8,14 +8,16 @@ class ScreenshotPipeline(object):
     """Pipeline that uses Splash to render screenshot of
     every Scrapy item."""
 
-    def __init__(self, screenshot_dir):
+    def __init__(self, screenshot_dir, max_retry=10):
         self.screenshot_dir = screenshot_dir
+        self.max_retry = max_retry
         os.makedirs(self.screenshot_dir, exist_ok=True)
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls(
-            crawler.settings['SCREENSHOT_DIR']
+            crawler.settings['SCREENSHOT_DIR'],
+            crawler.settings['RETRY_TIMES']
         )
 
     def process_item(self, item, spider):
@@ -41,12 +43,31 @@ class ScreenshotPipeline(object):
             # 'dont_send_headers': False,  # optional, default is False
             # 'magic_response': True,  # optional, default is True
         }
+        request.meta['retries'] = 0
+        return self.make_dfd(request, spider, item)
+
+    def make_dfd(self, request, spider, item):
         dfd = spider.crawler.engine.download(request, spider)
-        dfd.addBoth(self.return_item, item)
+        dfd.addCallback(self.return_item, item)
+        dfd.addErrback(self.process_error, spider, request, item)
         return dfd
 
+    def process_error(self, exception, spider, request, item):
+        spider.logger.error(
+            '<{}> failed, exception <{}>, message <{}>'.format(spider.name,
+                                                               exception.__class__.__name__,
+                                                               exception))
+        if request.meta['retries'] < self.max_retry:
+            request.meta['retries'] += 1
+            spider.logger.info(
+                '<{}> retrying screenshot request, times = {}'.format(spider.name, request.meta['retries']))
+            return self.make_dfd(request, spider, item)
+        else:
+            spider.logger.warning(
+                '<{}> give up screenshot request, times = {}'.format(spider.name, request.meta['retries']))
+
     def return_item(self, response, item):
-        if not hasattr(response, 'status') or response.status not in range(200, 300):
+        if response.status not in range(200, 300):
             # Error happened, return item.
             return item
         # Save screenshot to file, filename will be hash of url.
