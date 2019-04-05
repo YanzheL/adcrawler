@@ -43,28 +43,19 @@ class ScreenshotPipeline(object):
             # 'dont_send_headers': False,  # optional, default is False
             # 'magic_response': True,  # optional, default is True
         }
-        request.meta['retries'] = 0
         return self.make_dfd(request, spider, item)
 
     def make_dfd(self, request, spider, item):
         dfd = spider.crawler.engine.download(request, spider)
         dfd.addCallback(self.return_item, item)
-        dfd.addErrback(self.process_error, spider, request, item)
+        dfd.addErrback(self.process_error, spider)
         return dfd
 
-    def process_error(self, exception, spider, request, item):
+    def process_error(self, exception, spider):
         spider.logger.error(
-            '<{}> failed, exception <{}>, message <{}>'.format(spider.name,
-                                                               exception.__class__.__name__,
-                                                               exception))
-        if request.meta['retries'] < self.max_retry:
-            request.meta['retries'] += 1
-            spider.logger.info(
-                '<{}> retrying screenshot request, times = {}'.format(spider.name, request.meta['retries']))
-            return self.make_dfd(request, spider, item)
-        else:
-            spider.logger.warning(
-                '<{}> give up screenshot request, times = {}'.format(spider.name, request.meta['retries']))
+            '<{}> failed, exception <{}>, message <{}>, giving up...'.format(spider.name,
+                                                                             exception.__class__.__name__,
+                                                                             exception))
 
     def return_item(self, response, item):
         if response.status not in range(200, 300):

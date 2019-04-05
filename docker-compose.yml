@@ -50,5 +50,5 @@ services:
       - IMAGES_STORE=/images/ad
       - SCREENSHOT_DIR=/images/screenshots
       - RANDOM_WAIT_INTERVAL_RANGE=20
-      - DOWNLOAD_TIMEOUT=30
+      - DOWNLOAD_TIMEOUT=60
     command: scrapy crawl AdDataSpider
