@@ -1,10 +1,10 @@
 from bs4 import BeautifulSoup
 
 from adcrawler.items import *
-from adcrawler.spiders.ad_url_spider import AdUrlSpider
+from adcrawler.spiders.ad_spider_base import AdSpiderBase
 
 
-class BaiduAdUrlSpider(AdUrlSpider):
+class BaiduAdUrlSpider(AdSpiderBase):
     name = 'BaiduAdUrlSpider'
     redis_key = '{}:start_urls'.format(name)
     data_key = '{}:data_urls'.format(name)

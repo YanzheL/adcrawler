@@ -14,12 +14,16 @@ from urllib.parse import *
 #     return url
 
 def fix_url(url):
-    scheme, netloc, path, query, fragment = urlsplit(url, 'http', False)
-    if scheme not in ('http', 'https'):
+    if not url:
+        return
+    if not isinstance(url, str):
+        print(' Fuck type = {} '.format(type(url)).center(80, '-'))
+    res = urlsplit(url, 'http', False)
+    if res.scheme not in ('http', 'https'):
         return None
-    if not netloc:
+    if not res.netloc:
         return None
-    return urlunsplit(scheme, netloc, path, query, fragment)
+    return urlunsplit(res)
 
 
 def process_links(links):

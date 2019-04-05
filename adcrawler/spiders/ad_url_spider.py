@@ -1,45 +1,24 @@
+from collections.abc import Iterable
+
 from bs4 import Tag, BeautifulSoup
 from scrapy.http import Request
 from scrapy.utils.request import request_fingerprint
-from scrapy.utils.serialize import ScrapyJSONEncoder, ScrapyJSONDecoder
 
 from adcrawler.items import AdcrawlerDataTaskItem, AdcrawlerUrlTaskItem
-from adcrawler.scrapy_redis_bf.dupefilter import RFPDupeFilter
-from adcrawler.scrapy_redis_bf.spiders import RedisSpider
+from adcrawler.spiders.ad_spider_base import AdSpiderBase
 from adcrawler.utils.links_process import fix_url
 
 
-class AdUrlSpider(RedisSpider):
-    _filter = None
-    task_encoder = ScrapyJSONEncoder().encode
-    task_decoder = ScrapyJSONDecoder().decode
-
-    max_queue_len = 10000
-
+class AdUrlSpider(AdSpiderBase):
     name = 'AdUrlSpider'
     redis_key = '{}:url_tasks'.format(name)
     data_key = 'data_tasks'.format(name)
-
     custom_settings = {
         'ITEM_PIPELINES': {
             'adcrawler.pipelines.url_task.UrlPipeline': 300,
         }
     }
-
-    @property
-    def filter(self):
-        if not self._filter:
-            self._filter = RFPDupeFilter(self.server, self.settings.get('DUPEFILTER_KEY', '%(spider)s:dupefilter'))
-        return self._filter
-
-    def next_request(self):
-        serialized_task = self.server.rpop(self.redis_key)
-        if serialized_task:
-            return self.make_request_from_task(serialized_task, callback=self.parse, dont_filter=True)
-
-    @staticmethod
-    def tagfilter(tag):
-        return isinstance(tag, Tag)
+    MAX_URL_TASKS = 10000
 
     def make_request_from_task(self, serialized_task, **kwargs):
         serialized_task = str(serialized_task, 'utf8')
@@ -89,7 +68,7 @@ class AdUrlSpider(RedisSpider):
             item['ad_img_urls'] = [ad_src]
             yield item
         all_a_tags = soup.find_all('a')
-        if self.server.llen(self.redis_key) > self.max_queue_len:
+        if self.server.llen(self.redis_key) > self.MAX_URL_TASKS:
             return
         for at in all_a_tags:
             a_url = at.attrs.get('href', None)
@@ -131,15 +110,19 @@ class AdUrlSpider(RedisSpider):
     def has_ad(element):
         if element is None:
             return False
+        finder = lambda s: isinstance(s, str) and s.find('广告') != -1
         if isinstance(element, Tag):
             for v in element.attrs.values():
-                if v.find('广告') != -1:
+                if isinstance(v, Iterable):
+                    for i in v:
+                        if finder(i):
+                            return True
+                elif finder(v):
                     return True
-            if element.string.find('广告') != -1:
+            if element.string and finder(element.string):
                 return True
-        else:
-            if element.find('广告') != -1:
-                return True
+        elif finder(element):
+            return True
         return False
 
     @staticmethod
