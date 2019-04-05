@@ -113,6 +113,7 @@ class AdUrlSpider(AdSpiderBase):
             url = img_tag.attrs['data-url']
             return url
         parent = img_tag.parent
+
         if parent.name == 'a' and 'href' in parent.attrs:
             return parent.attrs['href']
         sibling_a_tags = parent.find_all("a", recursive=False)
