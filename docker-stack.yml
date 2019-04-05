@@ -4,7 +4,7 @@ services:
     image: leeyanzhe/adcrawler
     deploy:
       mode: replicated
-      replicas: 20
+      replicas: 100
       restart_policy:
         condition: any
         delay: 10s
@@ -33,7 +33,7 @@ services:
     image: leeyanzhe/adcrawler
     deploy:
       mode: replicated
-      replicas: 100
+      replicas: 20
       restart_policy:
         condition: any
         delay: 10s
