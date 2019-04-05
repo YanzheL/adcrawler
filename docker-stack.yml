@@ -50,10 +50,10 @@ services:
       - RETRY_TIMES=2
       - REDIS_HOST=10.245.146.40
       - REDIS_PORT=6379
-      #      - REDIS_PASSWORD=None
+      # - REDIS_PASSWORD=None
       - FILTER_HOST=10.245.146.40
       - FILTER_PORT=6379
-      #      - FILTER_PASSWORD=None
+      # - FILTER_PASSWORD=None
       - SPLASH_URL=http://10.245.146.40:8050
       - MONGO_HOST=10.245.146.100
       - MONGO_PORT=37017
@@ -72,7 +72,17 @@ services:
       - DOWNLOAD_TIMEOUT=30
     command: scrapy crawl AdDataSpider
     volumes:
-      - images:/images
+      # - images:/images
+      - type: volume
+        source: images
+        target: /images
+        volume:
+          nocopy: true
 
 volumes:
+  #  images:
   images:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.245.146.40,nolock,soft,rw"
+      device: ":/docker/images"
