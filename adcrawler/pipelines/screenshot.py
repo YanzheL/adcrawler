@@ -46,7 +46,7 @@ class ScreenshotPipeline(object):
         return dfd
 
     def return_item(self, response, item):
-        if response.status != 200:
+        if not hasattr(response, 'status') or response.status not in range(200, 300):
             # Error happened, return item.
             return item
         # Save screenshot to file, filename will be hash of url.
