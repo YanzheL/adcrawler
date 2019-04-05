@@ -1,0 +1,7 @@
+scrapy
+bs4
+scrapy-splash
+pymongo
+redis
+scrapy_redis
+pillow
