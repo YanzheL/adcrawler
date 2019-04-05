@@ -8,29 +8,25 @@ class ScreenshotPipeline(object):
     """Pipeline that uses Splash to render screenshot of
     every Scrapy item."""
 
-    def __init__(self, splash_url, screenshot_dir):
-        self.splash_url = splash_url + '?url={}'
+    def __init__(self, screenshot_dir):
         self.screenshot_dir = screenshot_dir
         os.makedirs(self.screenshot_dir, exist_ok=True)
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls(
-            crawler.settings['SPLASH_URL'],
             crawler.settings['SCREENSHOT_DIR']
         )
 
     def process_item(self, item, spider):
-        # request = SplashRequest(screenshot_url, endpoint='render.png', args=splash_args)
         request = scrapy.Request(item["url"])
         request.meta['splash'] = {
             'args': {
                 # set rendering arguments here
                 'html': 0,
-                'png': 1,
                 'width': 600,
                 'render_all': 1,
-                'wait': 10
+                'wait': 20
                 # 'url' is prefilled from request url
                 # 'http_method' is set to 'POST' for POST requests
                 # 'body' is set to request body for POST requests
