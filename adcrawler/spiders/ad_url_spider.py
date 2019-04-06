@@ -18,8 +18,9 @@ class AdUrlSpider(AdSpiderBase):
             'adcrawler.pipelines.url_task.UrlPipeline': 300,
         }
     }
-    MAX_URL_TASKS = 10000
+    MAX_URL_TASKS = 20000
     RECURSIVE_CHECK_DEPTH = 4
+    MAX_TASK_DEPTH = 100
 
     def make_request_from_task(self, serialized_task, **kwargs):
         serialized_task = str(serialized_task, 'utf8')
@@ -28,6 +29,8 @@ class AdUrlSpider(AdSpiderBase):
             url=task['url'],
             **kwargs
         )
+        if task['cur_depth'] > self.MAX_TASK_DEPTH:
+            return
         request.meta['cur_depth'] = task['cur_depth']
         request.meta['splash'] = {
             'args': {
