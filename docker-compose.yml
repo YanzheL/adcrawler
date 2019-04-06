@@ -17,6 +17,9 @@ services:
       - SPLASH_URL=http://10.245.146.40:8050
       - RANDOM_WAIT_INTERVAL_RANGE=20
       - DOWNLOAD_TIMEOUT=60
+      - MAX_URL_TASKS=20000
+      - RECURSIVE_CHECK_DEPTH=4
+      - MAX_TASK_DEPTH=100
     command: scrapy crawl AdUrlSpider
   dataspider:
     build: .
