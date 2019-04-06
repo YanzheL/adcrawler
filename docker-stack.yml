@@ -1,7 +1,7 @@
 version: '3.6'
 services:
   urlspider:
-    image: leeyanzhe/adcrawler
+    image: leeyanzhe/adcrawler:latest
     deploy:
       mode: replicated
       replicas: 100
@@ -30,7 +30,7 @@ services:
       - DOWNLOAD_TIMEOUT=60
     command: scrapy crawl AdUrlSpider
   dataspider:
-    image: leeyanzhe/adcrawler
+    image: leeyanzhe/adcrawler:latest
     deploy:
       mode: replicated
       replicas: 20
