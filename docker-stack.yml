@@ -4,7 +4,7 @@ services:
     image: leeyanzhe/adcrawler:latest
     deploy:
       mode: replicated
-      replicas: 100
+      replicas: 150
       restart_policy:
         condition: any
         delay: 10s
@@ -58,8 +58,8 @@ services:
       - FILTER_HOST=10.245.146.40
       - FILTER_PORT=6379
       # - FILTER_PASSWORD=None
-      - SPLASH_URL=http://10.245.146.40:8050
-      - MONGO_HOST=10.245.146.100
+      - SPLASH_URL=http://10.245.144.100:8050
+      - MONGO_HOST=10.245.146.40
       - MONGO_PORT=37017
       - MONGO_DB=ad_data
       - MONGO_USER=manager-rw

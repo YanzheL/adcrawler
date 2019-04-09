@@ -9,6 +9,9 @@ server = connection.from_settings(get_project_settings())
 if __name__ == '__main__':
     urls = [
         'https://finance.sina.com.cn/',
+        'http://www.eastmoney.com/',
+        'https://money.163.com/',
+        'http://finance.ifeng.com/',
         'http://business.sohu.com'
     ]
     for url in urls:
