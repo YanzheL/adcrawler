@@ -1,0 +1,15 @@
+version: '3.6'
+services:
+  nfs:
+    image: itsthenetwork/nfs-server-alpine
+    volumes:
+      - /datastore/adimages:/nfsshare   # host_directory:container_directory
+    restart: always
+    network_mode: host
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+      - SETPCAP
+    environment:
+      - SHARED_DIRECTORY=/nfsshare
+
